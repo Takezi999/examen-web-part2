@@ -1,0 +1,27 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Catálogo de Libros{% endblock %}
+
+{% block content %}
+<h1 class="mt-4" data-aos="fade-up">Catálogo de Libros</h1>
+<table class="table table-striped mt-4" data-aos="fade-up">
+    <thead>
+        <tr>
+            <th>Título</th>
+            <th>Año de Publicación</th>
+            <th>Autor</th>
+            <th>Categoría</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for libro in libros %}
+        <tr>
+            <td>{{ libro.titulo }}</td>
+            <td>{{ libro.anio_publicacion }}</td>
+            <td>{{ libro.autor.nombre }}</td>
+            <td>{{ libro.categoria.nombre }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

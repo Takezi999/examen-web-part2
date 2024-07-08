@@ -1,0 +1,15 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Categorías{% endblock %}
+
+{% block content %}
+<h1 class="mt-4" data-aos="fade-up">Categorías</h1>
+<ul class="list-group mt-4" data-aos="fade-up">
+    {% for categoria in categorias %}
+    <li class="list-group-item">
+        <h5>{{ categoria.nombre }}</h5>
+        <p>{{ categoria.descripcion }}</p>
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}
