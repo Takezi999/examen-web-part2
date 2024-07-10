@@ -30,3 +30,12 @@ class NavItem(models.Model):
 
     def __str__(self):
         return self.titulo
+class Libro(models.Model):
+    titulo = models.CharField(max_length=255)
+    anio_publicacion = models.IntegerField()
+    autor = models.ForeignKey(Autor, on_delete=models.CASCADE)
+    categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
+    # Otros campos del libro
+
+    def __str__(self):
+        return self.titulo

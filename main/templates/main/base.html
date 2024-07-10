@@ -5,26 +5,63 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"> <!-- Font Awesome -->
     <style>
-        /* Estilos adicionales personalizados */
         .bg-blue {
-            background-color: #6faced; /* Azul Bootstrap */
+            background-color: #6faced; 
         }
 
         .bg-light-gray {
-            background-color: #6f90b1; /* Gris claro Bootstrap */
+            background-color: #6f90b1;
+        }
+
+        /* Estilos para el carrito */
+        .carrito-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .carrito {
+            background-color: white;
+            padding: 20px;
+            max-width: 400px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
         }
     </style>
     <title>{% block title %}Biblioteca{% endblock %}</title>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-secondary">
-        <a class="navbar-brand" href="#">Biblioteca</a>
+        <a class="navbar-brand" href="{% url 'home' %}">Baul Del Libro</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'catalogo_autores' %}">Catalogo de Autores</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'catalogo_libros' %}">Catalogo Libros</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'categorias' %}">Categorias</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" id="carrito-link">
+                        <i class="fas fa-shopping-cart"></i> <!-- Icono de carrito de compras de Font Awesome -->
+                        <span id="carrito-cantidad">0</span> <!-- Aquí se mostrará dinámicamente la cantidad de libros -->
+                    </a>
+                </li>
                 {% for item in nav_items %}
                 <li class="nav-item">
                     <a class="nav-link" href="{{ item.url }}">{{ item.titulo }}</a>
@@ -38,6 +75,45 @@
         {% block content %}{% endblock %}
     </div>
 
+    <!-- Contenedor del carrito -->
+    <div class="carrito-overlay" id="carrito-overlay">
+        <div class="carrito">
+            <h3>Carrito de Compras</h3>
+            <ul id="carrito-lista">
+                <!-- Aquí se mostrarán los libros agregados al carrito -->
+            </ul>
+            <button class="btn btn-primary" id="cerrar-carrito">Cerrar</button>
+        </div>
+    </div>
+
+    <footer class="bg-light text-center text-lg-start mt-4">
+        <div class="container p-4">
+            <div class="row">
+                <div class="col-lg-6 col-md-12 mb-4 mb-md-0">
+                    <h5 class="text-uppercase">Baul Del Libro</h5>
+                    <p>
+                        Aquí puedes agregar alguna descripción breve sobre la biblioteca o cualquier otra información relevante.
+                    </p>
+                </div>
+                
+                <div class="col-lg-3 col-md-6 mb-4 mb-md-0">
+                    <h5 class="text-uppercase">Contacto</h5>
+                    <ul class="list-unstyled mb-0">
+                        <li>
+                            <a href="mailto:info@biblioteca.com" class="text-dark">info@BaulDelLibro.com</a>
+                        </li>
+                        <li>
+                            <a href="tel:+1234567890" class="text-dark">+1 234 567 890</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.2);">
+            © 2024 Baul Del Libro Todos los derechos reservados.
+        </div>
+    </footer>
+
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
@@ -48,21 +124,49 @@
     </script>
     <script>
         $(document).ready(function() {
-            $('form').on('submit', function(event) {
+            let carrito = []; // Arreglo para almacenar los libros agregados al carrito
+
+            // Función para actualizar dinámicamente la cantidad de libros en el carrito
+            function actualizarCantidadCarrito() {
+                $('#carrito-cantidad').text(carrito.length);
+            }
+
+            // Función para mostrar u ocultar el carrito
+            $('#carrito-link').on('click', function(event) {
                 event.preventDefault();
-                Swal.fire({
-                    title: '¿Estás seguro?',
-                    text: "No podrás revertir esto!",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Sí, enviar!'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        this.submit();
-                    }
-                })
+                $('#carrito-overlay').fadeIn();
+                mostrarCarrito();
+            });
+
+            $('#cerrar-carrito').on('click', function() {
+                $('#carrito-overlay').fadeOut();
+            });
+
+            // Función para mostrar los libros en el carrito
+            function mostrarCarrito() {
+                let listaCarrito = $('#carrito-lista');
+                listaCarrito.empty(); // Limpiar lista antes de mostrar libros
+
+                if (carrito.length === 0) {
+                    listaCarrito.append('<li>El carrito está vacío</li>');
+                } else {
+                    carrito.forEach(function(libro) {
+                        listaCarrito.append(`<li>${libro.titulo}</li>`);
+                    });
+                }
+            }
+
+            // Ejemplo de función para agregar un libro al carrito
+            function agregarAlCarrito(libro) {
+                carrito.push(libro); // Agregar el libro al arreglo del carrito
+                actualizarCantidadCarrito(); // Actualizar la cantidad de libros en el carrito
+                mostrarCarrito(); // Mostrar los libros actualizados en el carrito
+            }
+
+            // Ejemplo: Simular agregar un libro al carrito al hacer clic en un botón
+            $('#agregar-libro').on('click', function() {
+                let libro = { titulo: 'Harry Potter y la piedra filosofal' }; // Ejemplo de objeto libro
+                agregarAlCarrito(libro);
             });
         });
     </script>
