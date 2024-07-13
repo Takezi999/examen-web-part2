@@ -11,7 +11,7 @@
             <th>Año de Publicación</th>
             <th>Autor</th>
             <th>Categoría</th>
-            <th>Acciones</th>  <!-- Nuevo encabezado para acciones -->
+            <th>Acciones</th> 
         </tr>
     </thead>
     <tbody>
@@ -22,9 +22,9 @@
             <td>{{ libro.autor.nombre }}</td>
             <td>{{ libro.categoria.nombre }}</td>
             <td>
-                <button class="btn btn-primary btn-sm" onclick="agregarAlCarrito({{ libro.id }})">
-                    <img src="{% static 'img/carrito.png' %}" alt="Agregar al carrito">
-                   
+                <button class="btn btn-primary btn-sm btn-carrito" onclick="agregarAlCarrito({{ libro.id }})">
+                    <img src="{% static 'images/cart.svg' %}" alt="Carrito">
+                    Agregar al Carrito
                 </button>
             </td>
         </tr>
@@ -34,21 +34,29 @@
 
 <script>
     function agregarAlCarrito(libroId) {
-        // Aquí puedes agregar la lógica para agregar el libro al carrito
-        alert(`Libro con ID ${libroId} agregado al carrito.`);
         $.ajax({
-         url: '/agregar-al-carrito/',
-         method: 'POST',
-          data: {
-              libro_id: libroId
-          },
-          success: function(response) {
-             // Manejar la respuesta del servidor si es necesario
-         },
-          error: function(error) {
-              console.error('Error al agregar el libro al carrito:', error);
-          }
-      });
+            url: '{% url "agregar_al_carrito" %}',
+            method: 'POST',
+            data: {
+                libro_id: libroId,
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            },
+            success: function(response) {
+                Swal.fire({
+                    title: "¡Buen trabajo!",
+                    text: response.message,
+                    icon: "success"
+                });
+            },
+            error: function(error) {
+                console.error('Error al agregar el libro al carrito:', error);
+                Swal.fire({
+                    title: "Error",
+                    text: "Hubo un problema al agregar el libro al carrito.",
+                    icon: "error"
+                });
+            }
+        });
     }
 </script>
 {% endblock %}
